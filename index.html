@@ -37,7 +37,6 @@
     z-index: 9999;
   }
 
-  /* HEADER */
   header {
     position: fixed; top: 0; left: 0; right: 0;
     height: var(--header-h);
@@ -54,26 +53,20 @@
     font-size: 10px;
     color: var(--accent);
     text-shadow: 0 0 10px var(--accent);
-    white-space: nowrap;
-    flex-shrink: 0;
+    white-space: nowrap; flex-shrink: 0;
   }
   .logo span { color: var(--accent2); text-shadow: 0 0 10px var(--accent2); }
 
   .online-badge {
     display: flex; align-items: center; gap: 5px;
-    font-size: 9px; color: var(--dim);
-    flex-shrink: 0;
+    font-size: 9px; color: var(--dim); flex-shrink: 0;
   }
-  .online-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--dim); transition: background 0.3s;
-  }
+  .online-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); transition: background 0.3s; }
   .online-dot.connected { background: #00ff88; box-shadow: 0 0 6px #00ff88; }
   .online-count { color: var(--text); font-family: 'Press Start 2P', monospace; font-size: 8px; }
 
   .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-  /* COOLDOWN в хедере */
   .cooldown-pill {
     display: flex; align-items: center; gap: 6px;
     background: rgba(255,255,255,0.04);
@@ -81,32 +74,20 @@
     padding: 4px 10px;
   }
   .cooldown-bar-wrap { width: 60px; height: 4px; background: rgba(255,255,255,0.08); overflow: hidden; }
-  .cooldown-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent2), #00ff88);
-    box-shadow: 0 0 6px var(--accent2);
-    transition: width 0.1s linear;
-  }
-  .cooldown-value {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px; color: var(--accent2);
-    min-width: 32px; text-align: center;
-  }
+  .cooldown-bar { height: 100%; background: linear-gradient(90deg, var(--accent2), #00ff88); box-shadow: 0 0 6px var(--accent2); transition: width 0.05s linear; }
+  .cooldown-value { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--accent2); min-width: 32px; text-align: center; }
   .cooldown-value.ready { color: #00ff88; animation: pulseGreen 0.4s ease; }
   @keyframes pulseGreen { 0%{transform:scale(1.4)} 100%{transform:scale(1)} }
 
   .fs-btn {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid var(--border);
-    color: var(--text); font-size: 18px;
-    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    color: var(--text); font-size: 18px; width: 36px; height: 36px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: background 0.15s; flex-shrink: 0; user-select: none;
   }
   .fs-btn:hover { background: rgba(255,255,255,0.12); }
   .fs-btn:active { background: rgba(0,255,255,0.1); }
 
-  /* CANVAS AREA */
   #canvasArea {
     position: fixed;
     top: var(--header-h); left: 0; right: 0; bottom: var(--bottom-h);
@@ -115,7 +96,6 @@
   }
 
   #canvasViewport { position: absolute; transform-origin: 0 0; will-change: transform; }
-
   #pixelCanvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
   #gridCanvas { position: absolute; top: 0; left: 0; pointer-events: none; image-rendering: pixelated; }
   #hoverIndicator {
@@ -125,14 +105,10 @@
     z-index: 5; display: none;
   }
 
-  /* LOADING */
   #loadingOverlay {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 20px; z-index: 1000;
-    transition: opacity 0.5s;
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 20px; z-index: 1000; transition: opacity 0.5s;
   }
   #loadingOverlay.hidden { opacity: 0; pointer-events: none; }
   .loading-logo { font-family: 'Press Start 2P', monospace; font-size: 16px; color: var(--accent); text-shadow: 0 0 20px var(--accent); }
@@ -141,7 +117,6 @@
   .loading-bar { height: 100%; background: linear-gradient(90deg, var(--accent2), #00ff88); width: 0%; transition: width 0.3s; box-shadow: 0 0 10px var(--accent2); }
   .loading-text { font-size: 10px; color: var(--dim); letter-spacing: 2px; }
 
-  /* BOTTOM PANEL (mobile) */
   #bottomPanel {
     position: fixed; bottom: 0; left: 0; right: 0;
     height: var(--bottom-h);
@@ -149,14 +124,10 @@
     display: flex; flex-direction: column; z-index: 100;
   }
 
-  .bp-top {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 12px 4px; flex-shrink: 0;
-  }
+  .bp-top { display: flex; align-items: center; gap: 8px; padding: 8px 12px 4px; flex-shrink: 0; }
 
   .bp-selected-color {
-    width: 36px; height: 36px;
-    border: 2px solid rgba(255,255,255,0.3);
+    width: 36px; height: 36px; border: 2px solid rgba(255,255,255,0.3);
     flex-shrink: 0; cursor: pointer; position: relative;
   }
   .bp-selected-color input[type="color"] {
@@ -185,23 +156,11 @@
   .zoom-btn:active { background: rgba(0,255,255,0.12); }
   .zoom-label { font-size: 10px; color: var(--dim); min-width: 28px; text-align: center; }
 
-  /* Cooldown bar mobile */
-  .bp-cooldown {
-    display: flex; align-items: center; gap: 6px;
-    padding: 0 12px 6px; flex-shrink: 0;
-  }
+  .bp-cooldown { display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; flex-shrink: 0; }
   .bp-cd-label { font-size: 9px; color: var(--dim); white-space: nowrap; }
   .bp-cd-bar-wrap { flex: 1; height: 5px; background: rgba(255,255,255,0.07); overflow: hidden; }
-  .bp-cd-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent2), #00ff88);
-    box-shadow: 0 0 6px var(--accent2);
-    transition: width 0.1s linear;
-  }
-  .bp-cd-val {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px; color: var(--accent2); min-width: 36px; text-align: right;
-  }
+  .bp-cd-bar { height: 100%; background: linear-gradient(90deg, var(--accent2), #00ff88); box-shadow: 0 0 6px var(--accent2); transition: width 0.05s linear; }
+  .bp-cd-val { font-family: 'Press Start 2P', monospace; font-size: 8px; color: var(--accent2); min-width: 36px; text-align: right; }
   .bp-cd-val.ready { color: #00ff88; }
 
   .palette-scroll {
@@ -219,7 +178,6 @@
   .color-swatch:active { transform: scale(1.2); }
   .color-swatch.active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.6); transform: scale(1.15); }
 
-  /* DESKTOP SIDE PANEL */
   #sidePanel {
     display: none;
     position: fixed; top: var(--header-h); right: 0;
@@ -230,39 +188,26 @@
 
   .sp-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
   .sp-title { font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--dim); letter-spacing: 2px; margin-bottom: 10px; }
-
   .sp-palette { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
   .sp-palette .color-swatch { width: 100%; height: auto; aspect-ratio: 1; }
-
   .sp-color-row { display: flex; align-items: center; gap: 8px; }
   input[type="color"].sp-picker { width: 38px; height: 38px; border: 1px solid var(--border); background: transparent; cursor: pointer; padding: 2px; flex-shrink: 0; }
   .sp-hex { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 12px; padding: 8px; text-transform: uppercase; outline: none; }
   .sp-hex:focus { border-color: var(--accent2); }
-
   .sp-preview { display: flex; align-items: center; gap: 10px; }
   .sp-preview-swatch { width: 34px; height: 34px; border: 1px solid var(--border); flex-shrink: 0; }
   .sp-preview-label { font-size: 10px; color: var(--dim); line-height: 1.6; }
   .sp-preview-label strong { display: block; color: var(--text); font-size: 12px; }
 
-  /* Cooldown в сайдбаре */
   .sp-cooldown-wrap { margin-top: 4px; }
   .sp-cd-bar-outer { height: 6px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
-  .sp-cd-bar-inner {
-    height: 100%; border-radius: 3px;
-    background: linear-gradient(90deg, var(--accent2), #00ff88);
-    box-shadow: 0 0 8px var(--accent2);
-    transition: width 0.1s linear;
-  }
-  .sp-cd-val {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 10px; color: var(--accent2); text-align: center;
-  }
+  .sp-cd-bar-inner { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent2), #00ff88); box-shadow: 0 0 8px var(--accent2); transition: width 0.05s linear; }
+  .sp-cd-val { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--accent2); text-align: center; }
   .sp-cd-val.ready { color: #00ff88; }
 
   .stat-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--dim); margin-bottom: 6px; }
   .stat-row span:last-child { color: var(--text); }
 
-  /* FLASH */
   #flashMsg {
     position: fixed;
     bottom: calc(var(--bottom-h) + 12px); left: 50%;
@@ -288,7 +233,6 @@
 </head>
 <body>
 
-<!-- LOADING -->
 <div id="loadingOverlay">
   <div class="loading-logo">PIXEL <span>BATTLE</span></div>
   <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
@@ -297,19 +241,14 @@
 
 <header>
   <div class="logo">PIXEL <span>BATTLE</span></div>
-
   <div class="online-badge">
     <div class="online-dot" id="onlineDot"></div>
     <span id="onlineCount" class="online-count">—</span>
     <span style="font-size:9px;color:var(--dim);">онлайн</span>
   </div>
-
   <div class="header-right">
-    <!-- Cooldown (desktop header) -->
-    <div class="cooldown-pill" id="headerCooldown" style="display:none;">
-      <div class="cooldown-bar-wrap">
-        <div class="cooldown-bar" id="cdBar" style="width:100%"></div>
-      </div>
+    <div class="cooldown-pill">
+      <div class="cooldown-bar-wrap"><div class="cooldown-bar" id="cdBar" style="width:100%"></div></div>
       <div class="cooldown-value ready" id="cdVal">GO!</div>
     </div>
     <button class="fs-btn" id="fsBtn" title="Полный экран">⛶</button>
@@ -324,7 +263,6 @@
   </div>
 </div>
 
-<!-- MOBILE BOTTOM PANEL -->
 <div id="bottomPanel">
   <div class="bp-top">
     <div class="bp-selected-color" id="bpSwatch">
@@ -333,23 +271,19 @@
     <input type="text" class="bp-hex" id="bpHexInput" value="#000000" maxlength="7">
     <div class="zoom-controls">
       <button class="zoom-btn" id="zoomOut">−</button>
-      <div class="zoom-label" id="zoomLabel">×4</div>
+      <div class="zoom-label" id="zoomLabel">×2</div>
       <button class="zoom-btn" id="zoomIn">+</button>
     </div>
     <div class="bp-coords">X:<span id="coordX">—</span> Y:<span id="coordY">—</span></div>
   </div>
-
-  <!-- Cooldown mobile bar -->
   <div class="bp-cooldown">
     <div class="bp-cd-label">COOLDOWN</div>
     <div class="bp-cd-bar-wrap"><div class="bp-cd-bar" id="cdBarMobile" style="width:100%"></div></div>
     <div class="bp-cd-val ready" id="cdValMobile">GO!</div>
   </div>
-
   <div class="palette-scroll" id="mobilePalette"></div>
 </div>
 
-<!-- DESKTOP SIDE PANEL -->
 <div id="sidePanel">
   <div class="sp-section">
     <div class="sp-title">Выбран</div>
@@ -380,7 +314,7 @@
     <div class="sp-title">Зум</div>
     <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
       <button class="zoom-btn" id="spZoomOut">−</button>
-      <div class="zoom-label" id="spZoomLabel">×4</div>
+      <div class="zoom-label" id="spZoomLabel">×2</div>
       <button class="zoom-btn" id="spZoomIn">+</button>
       <span style="font-size:9px;color:var(--dim);margin-left:4px;">колесо</span>
     </div>
@@ -389,8 +323,8 @@
     <div class="sp-title">Статистика</div>
     <div class="stat-row"><span>Поставлено</span><span id="statPlaced">0</span></div>
     <div class="stat-row"><span>Всего на холсте</span><span id="statTotal">0</span></div>
-    <div class="stat-row"><span>Холст</span><span>100×100</span></div>
-    <div class="stat-row"><span>Кулдаун</span><span>10 сек</span></div>
+    <div class="stat-row"><span>Холст</span><span>250×250</span></div>
+    <div class="stat-row"><span>Кулдаун</span><span>2 сек</span></div>
     <div class="stat-row" style="margin-top:6px;">
       <span>X:<span id="spCoordX" style="color:var(--accent2)">—</span></span>
       <span>Y:<span id="spCoordY" style="color:var(--accent2)">—</span></span>
@@ -405,7 +339,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, set, onValue, onDisconnect, push, remove }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// ── НОВЫЙ СЕРВЕР ──
 const firebaseConfig = {
   apiKey: "AIzaSyD4mw8bp2gsAYLY_jTtuN1JH24IoTllLNk",
   authDomain: "batles-pix.firebaseapp.com",
@@ -419,9 +352,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-// ── Constants ──
-const COLS = 100, ROWS = 100;
-const COOLDOWN_MS = 10000; // 10 секунд
+const COLS = 250, ROWS = 250;
+const COOLDOWN_MS = 2000;
 
 const PALETTE = [
   '#ffffff','#e4e4e4','#888888','#444444','#222222','#000000',
@@ -431,8 +363,7 @@ const PALETTE = [
   '#6d001a','#be0039','#ff9600','#ffd635','#fff8b8','#00a368',
 ];
 
-// ── State ──
-let zoom = 4;
+let zoom = 2;
 let selectedColor = '#000000';
 let pixelsPlaced = 0;
 let totalPixels = 0;
@@ -445,12 +376,9 @@ let touchMoved = false;
 let touchStartX = 0, touchStartY = 0;
 let touchPanStartTX = 0, touchPanStartTY = 0;
 let touchPanCenterX = 0, touchPanCenterY = 0;
-
-// ── Cooldown state ──
 let canPlace = true;
 let cooldownStart = null;
 
-// ── Elements ──
 const canvasArea  = document.getElementById('canvasArea');
 const viewport    = document.getElementById('canvasViewport');
 const pixelCanvas = document.getElementById('pixelCanvas');
@@ -459,15 +387,13 @@ const ctx  = pixelCanvas.getContext('2d');
 const gctx = gridCanvas.getContext('2d');
 const hoverEl = document.getElementById('hoverIndicator');
 
-// Cooldown elements
-const cdBar     = document.getElementById('cdBar');
-const cdVal     = document.getElementById('cdVal');
-const cdBarM    = document.getElementById('cdBarMobile');
-const cdValM    = document.getElementById('cdValMobile');
-const cdBarS    = document.getElementById('cdBarSide');
-const cdValS    = document.getElementById('cdValSide');
+// All cooldown elements
+const cdEls = {
+  bars: [document.getElementById('cdBar'), document.getElementById('cdBarMobile'), document.getElementById('cdBarSide')],
+  vals: [document.getElementById('cdVal'), document.getElementById('cdValMobile'), document.getElementById('cdValSide')],
+};
 
-// ── Pixel data ──
+// Pixel buffer
 const pixels = new Uint8ClampedArray(COLS * ROWS * 4);
 for (let i = 0; i < pixels.length; i += 4) {
   pixels[i]=255; pixels[i+1]=255; pixels[i+2]=255; pixels[i+3]=255;
@@ -496,7 +422,7 @@ function redraw() {
 function drawGrid() {
   gctx.clearRect(0,0,gridCanvas.width,gridCanvas.height);
   if (zoom < 4) return;
-  gctx.strokeStyle='rgba(255,255,255,0.07)';
+  gctx.strokeStyle='rgba(255,255,255,0.06)';
   gctx.lineWidth=0.5;
   for(let x=0;x<=COLS;x++){gctx.beginPath();gctx.moveTo(x*zoom,0);gctx.lineTo(x*zoom,ROWS*zoom);gctx.stroke();}
   for(let y=0;y<=ROWS;y++){gctx.beginPath();gctx.moveTo(0,y*zoom);gctx.lineTo(COLS*zoom,y*zoom);gctx.stroke();}
@@ -521,36 +447,24 @@ function setZoom(z, ox, oy) {
   const cw=COLS*zoom, ch=ROWS*zoom;
   pixelCanvas.width=cw; pixelCanvas.height=ch;
   gridCanvas.width=cw;  gridCanvas.height=ch;
-  document.getElementById('zoomLabel').textContent   = '×'+zoom;
-  document.getElementById('spZoomLabel').textContent = '×'+zoom;
+  ['zoomLabel','spZoomLabel'].forEach(id => document.getElementById(id).textContent = '×'+zoom);
   redraw(); drawGrid(); applyViewport();
 }
 
-// ── Cooldown ──
-function setCooldownUI(pct, text, isReady) {
-  const w = pct + '%';
-  const cls = isReady ? 'cooldown-value ready' : 'cooldown-value';
-  const clsM = isReady ? 'bp-cd-val ready' : 'bp-cd-val';
-  const clsS = isReady ? 'sp-cd-val ready' : 'sp-cd-val';
-
-  cdBar.style.width = w;
-  cdVal.textContent = text;
-  cdVal.className = cls;
-
-  cdBarM.style.width = w;
-  cdValM.textContent = text;
-  cdValM.className = clsM;
-
-  cdBarS.style.width = w;
-  cdValS.textContent = text;
-  cdValS.className = clsS;
+// Cooldown UI
+function setCooldownUI(pct, text, ready) {
+  cdEls.bars.forEach(b => b.style.width = pct + '%');
+  cdEls.vals.forEach((v, i) => {
+    v.textContent = text;
+    const readyCls = i === 0 ? 'cooldown-value ready' : i === 1 ? 'bp-cd-val ready' : 'sp-cd-val ready';
+    const normalCls = i === 0 ? 'cooldown-value' : i === 1 ? 'bp-cd-val' : 'sp-cd-val';
+    v.className = ready ? readyCls : normalCls;
+  });
 }
-
 function animateCooldown() {
   const elapsed = Date.now() - cooldownStart;
   const progress = Math.min(elapsed / COOLDOWN_MS, 1);
   const remaining = Math.max(0, COOLDOWN_MS - elapsed);
-
   if (progress >= 1) {
     canPlace = true;
     setCooldownUI(100, 'GO!', true);
@@ -559,15 +473,14 @@ function animateCooldown() {
   setCooldownUI(progress * 100, (remaining / 1000).toFixed(1) + 's', false);
   requestAnimationFrame(animateCooldown);
 }
-
 function startCooldown() {
   canPlace = false;
   cooldownStart = Date.now();
-  setCooldownUI(0, '10.0s', false);
+  setCooldownUI(0, '2.0s', false);
   animateCooldown();
 }
 
-// ── Loading ──
+// Loading
 function setLoading(pct, text) {
   document.getElementById('loadingBar').style.width = pct + '%';
   document.getElementById('loadingText').textContent = text;
@@ -578,12 +491,13 @@ function hideLoading() {
   setTimeout(() => ov.remove(), 600);
 }
 
-// ── Firebase ──
+// Firebase
 const canvasRef   = ref(db, 'canvas');
 const presenceRef = ref(db, 'presence');
 
-// Load once
 setLoading(20, 'ЗАГРУЗКА ХОЛСТА...');
+
+// Load once
 onValue(canvasRef, (snap) => {
   const data = snap.val();
   setLoading(80, 'РИСУЕМ ПИКСЕЛИ...');
@@ -601,15 +515,13 @@ onValue(canvasRef, (snap) => {
   }
   totalPixels = count;
   document.getElementById('statTotal').textContent = totalPixels;
-  setZoom(4); centerCanvas();
+  setZoom(2); centerCanvas();
   redraw(); drawGrid();
   setLoading(100, 'ГОТОВО!');
   setTimeout(hideLoading, 400);
-  // Show cooldown pill on desktop
-  document.getElementById('headerCooldown').style.display = 'flex';
 }, { onlyOnce: true });
 
-// Realtime updates
+// Realtime
 onValue(canvasRef, (snap) => {
   const data = snap.val();
   for (let i = 0; i < pixels.length; i += 4) {
@@ -633,45 +545,33 @@ onValue(canvasRef, (snap) => {
 const myPresenceRef = push(presenceRef);
 set(myPresenceRef, { online: true, t: Date.now() });
 onDisconnect(myPresenceRef).remove();
-
 onValue(presenceRef, (snap) => {
   const count = snap.exists() ? Object.keys(snap.val()).length : 0;
   document.getElementById('onlineCount').textContent = count;
   document.getElementById('onlineDot').classList.toggle('connected', count > 0);
 });
 
-// ── Write pixel ──
-async function writePixel(x, y, hex) {
-  await set(ref(db, `canvas/${x}_${y}`), hex);
-}
-
-// ── Place pixel ──
 async function placePixel(x, y) {
   if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return;
-
   if (!canPlace) {
-    const rem = Math.ceil((COOLDOWN_MS - (Date.now() - cooldownStart)) / 1000);
+    const rem = ((COOLDOWN_MS - (Date.now() - cooldownStart)) / 1000).toFixed(1);
     showFlash('Ещё ' + rem + ' сек...', 'error');
     return;
   }
-
-  // Optimistic local update
   setPixelLocal(x, y, selectedColor);
   redraw();
-
   try {
-    await writePixel(x, y, selectedColor);
+    await set(ref(db, `canvas/${x}_${y}`), selectedColor);
     pixelsPlaced++;
     document.getElementById('statPlaced').textContent = pixelsPlaced;
     showFlash('(' + x + ',' + y + ') ✓', 'success');
   } catch(e) {
     showFlash('Ошибка сети!', 'error');
   }
-
   startCooldown();
 }
 
-// ── Palettes ──
+// Palettes
 function buildPalette(id, isDesktop) {
   const el = document.getElementById(id);
   PALETTE.forEach(hex => {
@@ -702,52 +602,41 @@ function selectColor(hex) {
 }
 selectColor('#000000');
 
-function bindColorInputs(pickerId, hexId) {
-  const p=document.getElementById(pickerId), h=document.getElementById(hexId);
-  p.addEventListener('input', ()=>selectColor(p.value));
-  h.addEventListener('input', ()=>{ let v=h.value; if(!v.startsWith('#'))v='#'+v; if(/^#[0-9a-f]{6}$/i.test(v))selectColor(v); });
-}
-bindColorInputs('bpColorPicker','bpHexInput');
-bindColorInputs('spColorPicker','spHexInput');
+['bpColorPicker','spColorPicker'].forEach(id => {
+  const p = document.getElementById(id);
+  p.addEventListener('input', () => selectColor(p.value));
+});
+['bpHexInput','spHexInput'].forEach(id => {
+  const h = document.getElementById(id);
+  h.addEventListener('input', () => { let v=h.value; if(!v.startsWith('#'))v='#'+v; if(/^#[0-9a-f]{6}$/i.test(v))selectColor(v); });
+});
 
-// ── Coords ──
 function areaToPixel(ax, ay) {
   return { x: Math.floor((ax-panX)/zoom), y: Math.floor((ay-panY)/zoom) };
 }
 function setCoords(x,y) {
   const xs=(x>=0&&x<COLS)?x:'—', ys=(y>=0&&y<ROWS)?y:'—';
-  document.getElementById('coordX').textContent=xs;
-  document.getElementById('coordY').textContent=ys;
-  document.getElementById('spCoordX').textContent=xs;
-  document.getElementById('spCoordY').textContent=ys;
+  ['coordX','spCoordX'].forEach(id => document.getElementById(id).textContent = xs);
+  ['coordY','spCoordY'].forEach(id => document.getElementById(id).textContent = ys);
 }
 
-// ── Mouse ──
+// Mouse
 canvasArea.addEventListener('mousedown', e=>{
   if(e.button!==0) return;
-  isPanning=false;
-  panStartX=e.clientX; panStartY=e.clientY;
-  panStartTX=panX; panStartTY=panY;
+  isPanning=false; panStartX=e.clientX; panStartY=e.clientY; panStartTX=panX; panStartTY=panY;
 });
 canvasArea.addEventListener('mousemove', e=>{
   const rect=canvasArea.getBoundingClientRect();
-  const ax=e.clientX-rect.left, ay=e.clientY-rect.top;
-  const {x,y}=areaToPixel(ax,ay);
+  const {x,y}=areaToPixel(e.clientX-rect.left, e.clientY-rect.top);
   setCoords(x,y);
   if(x>=0&&x<COLS&&y>=0&&y<ROWS){
     hoverEl.style.display='block';
-    hoverEl.style.left=(panX+x*zoom)+'px';
-    hoverEl.style.top=(panY+y*zoom)+'px';
-    hoverEl.style.width=zoom+'px';
-    hoverEl.style.height=zoom+'px';
-  } else { hoverEl.style.display='none'; }
+    hoverEl.style.left=(panX+x*zoom)+'px'; hoverEl.style.top=(panY+y*zoom)+'px';
+    hoverEl.style.width=zoom+'px'; hoverEl.style.height=zoom+'px';
+  } else hoverEl.style.display='none';
   if(e.buttons===1){
     const dx=e.clientX-panStartX, dy=e.clientY-panStartY;
-    if(Math.abs(dx)>4||Math.abs(dy)>4){
-      isPanning=true;
-      panX=panStartTX+dx; panY=panStartTY+dy;
-      applyViewport(); hoverEl.style.display='none';
-    }
+    if(Math.abs(dx)>4||Math.abs(dy)>4){ isPanning=true; panX=panStartTX+dx; panY=panStartTY+dy; applyViewport(); hoverEl.style.display='none'; }
   }
 });
 canvasArea.addEventListener('mouseup', e=>{
@@ -756,62 +645,49 @@ canvasArea.addEventListener('mouseup', e=>{
   isPanning=false;
 });
 canvasArea.addEventListener('mouseleave',()=>{ hoverEl.style.display='none'; isPanning=false; setCoords(-1,-1); });
-canvasArea.addEventListener('wheel',e=>{
-  e.preventDefault();
-  const rect=canvasArea.getBoundingClientRect();
-  setZoom(zoom+(e.deltaY<0?1:-1), e.clientX-rect.left, e.clientY-rect.top);
-},{passive:false});
+canvasArea.addEventListener('wheel',e=>{ e.preventDefault(); const rect=canvasArea.getBoundingClientRect(); setZoom(zoom+(e.deltaY<0?1:-1),e.clientX-rect.left,e.clientY-rect.top); },{passive:false});
 
-// ── Touch ──
-function touchDist(t1,t2){ const dx=t1.clientX-t2.clientX,dy=t1.clientY-t2.clientY;return Math.sqrt(dx*dx+dy*dy); }
-function touchCenter(t1,t2){ return {x:(t1.clientX+t2.clientX)/2,y:(t1.clientY+t2.clientY)/2}; }
-
+// Touch
+function tDist(a,b){return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);}
+function tCenter(a,b){return{x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2};}
 canvasArea.addEventListener('touchstart',e=>{
   e.preventDefault();
   Array.from(e.changedTouches).forEach(t=>touches[t.identifier]=t);
   const ids=Object.keys(touches); touchMoved=false;
-  if(ids.length===1){ const t=touches[ids[0]]; touchStartX=t.clientX; touchStartY=t.clientY; touchPanStartTX=panX; touchPanStartTY=panY; }
-  if(ids.length===2){ const [a,b]=ids.map(i=>touches[i]); lastPinchDist=touchDist(a,b); const c=touchCenter(a,b); touchPanCenterX=c.x; touchPanCenterY=c.y; touchPanStartTX=panX; touchPanStartTY=panY; }
+  if(ids.length===1){const t=touches[ids[0]];touchStartX=t.clientX;touchStartY=t.clientY;touchPanStartTX=panX;touchPanStartTY=panY;}
+  if(ids.length===2){const[a,b]=ids.map(i=>touches[i]);lastPinchDist=tDist(a,b);const c=tCenter(a,b);touchPanCenterX=c.x;touchPanCenterY=c.y;touchPanStartTX=panX;touchPanStartTY=panY;}
 },{passive:false});
 canvasArea.addEventListener('touchmove',e=>{
   e.preventDefault();
   Array.from(e.changedTouches).forEach(t=>touches[t.identifier]=t);
   const ids=Object.keys(touches);
-  if(ids.length===1){ const t=touches[ids[0]]; const dx=t.clientX-touchStartX,dy=t.clientY-touchStartY; if(Math.abs(dx)>4||Math.abs(dy)>4)touchMoved=true; panX=touchPanStartTX+dx; panY=touchPanStartTY+dy; applyViewport(); }
-  if(ids.length===2){ touchMoved=true; const [a,b]=ids.map(i=>touches[i]); const dist=touchDist(a,b); const c=touchCenter(a,b); const rect=canvasArea.getBoundingClientRect(); const ox=c.x-rect.left,oy=c.y-rect.top; if(lastPinchDist){ const nz=Math.max(1,Math.min(16,Math.round(zoom*(dist/lastPinchDist)))); if(nz!==zoom){setZoom(nz,ox,oy);lastPinchDist=dist;} } panX=touchPanStartTX+(c.x-touchPanCenterX); panY=touchPanStartTY+(c.y-touchPanCenterY); applyViewport(); }
+  if(ids.length===1){const t=touches[ids[0]];const dx=t.clientX-touchStartX,dy=t.clientY-touchStartY;if(Math.abs(dx)>4||Math.abs(dy)>4)touchMoved=true;panX=touchPanStartTX+dx;panY=touchPanStartTY+dy;applyViewport();}
+  if(ids.length===2){touchMoved=true;const[a,b]=ids.map(i=>touches[i]);const dist=tDist(a,b);const c=tCenter(a,b);const rect=canvasArea.getBoundingClientRect();const ox=c.x-rect.left,oy=c.y-rect.top;if(lastPinchDist){const nz=Math.max(1,Math.min(16,Math.round(zoom*(dist/lastPinchDist))));if(nz!==zoom){setZoom(nz,ox,oy);lastPinchDist=dist;}}panX=touchPanStartTX+(c.x-touchPanCenterX);panY=touchPanStartTY+(c.y-touchPanCenterY);applyViewport();}
 },{passive:false});
 canvasArea.addEventListener('touchend',e=>{
   e.preventDefault();
   Array.from(e.changedTouches).forEach(t=>delete touches[t.identifier]);
   lastPinchDist=null;
   const ids=Object.keys(touches);
-  if(ids.length===0&&!touchMoved){ const t=e.changedTouches[0]; const rect=canvasArea.getBoundingClientRect(); const {x,y}=areaToPixel(t.clientX-rect.left,t.clientY-rect.top); placePixel(x,y); }
-  if(ids.length===1){ const t=touches[ids[0]]; touchStartX=t.clientX; touchStartY=t.clientY; touchPanStartTX=panX; touchPanStartTY=panY; }
+  if(ids.length===0&&!touchMoved){const t=e.changedTouches[0];const rect=canvasArea.getBoundingClientRect();const{x,y}=areaToPixel(t.clientX-rect.left,t.clientY-rect.top);placePixel(x,y);}
+  if(ids.length===1){const t=touches[ids[0]];touchStartX=t.clientX;touchStartY=t.clientY;touchPanStartTX=panX;touchPanStartTY=panY;}
 },{passive:false});
 
-// ── Zoom buttons ──
+// Zoom buttons
 document.getElementById('zoomIn').addEventListener('click',   ()=>setZoom(zoom+1));
 document.getElementById('zoomOut').addEventListener('click',  ()=>setZoom(zoom-1));
 document.getElementById('spZoomIn').addEventListener('click', ()=>setZoom(zoom+1));
 document.getElementById('spZoomOut').addEventListener('click',()=>setZoom(zoom-1));
 
-// ── Fullscreen ──
+// Fullscreen
 const fsBtn=document.getElementById('fsBtn');
-fsBtn.addEventListener('click',()=>{
-  if(!document.fullscreenElement){ document.documentElement.requestFullscreen().catch(()=>{}); }
-  else { document.exitFullscreen(); }
-});
-document.addEventListener('fullscreenchange',()=>{
-  fsBtn.textContent=document.fullscreenElement?'✕':'⛶';
-  setTimeout(centerCanvas,150);
-});
+fsBtn.addEventListener('click',()=>{ if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); });
+document.addEventListener('fullscreenchange',()=>{ fsBtn.textContent=document.fullscreenElement?'✕':'⛶'; setTimeout(centerCanvas,150); });
 
-// ── Flash ──
 function showFlash(msg,type){
   const el=document.getElementById('flashMsg');
   el.textContent=msg; el.className='show '+type;
-  clearTimeout(el._t);
-  el._t=setTimeout(()=>el.className=type,1800);
+  clearTimeout(el._t); el._t=setTimeout(()=>el.className=type,1800);
 }
 
 window.addEventListener('resize',()=>setTimeout(centerCanvas,50));
