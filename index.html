@@ -249,8 +249,9 @@
   <div class="header-right">
     <div class="cooldown-pill">
       <div class="cooldown-bar-wrap"><div class="cooldown-bar" id="cdBar" style="width:100%"></div></div>
-      <div class="cooldown-value ready" id="cdVal">GO!</div>
+      <div class="cooldown-value ready" id="cdVal">5/5</div>
     </div>
+    <button class="fs-btn" id="centerBtn" title="По центру" style="font-size:13px;">⌖</button>
     <button class="fs-btn" id="fsBtn" title="Полный экран">⛶</button>
   </div>
 </header>
@@ -279,7 +280,7 @@
   <div class="bp-cooldown">
     <div class="bp-cd-label">COOLDOWN</div>
     <div class="bp-cd-bar-wrap"><div class="bp-cd-bar" id="cdBarMobile" style="width:100%"></div></div>
-    <div class="bp-cd-val ready" id="cdValMobile">GO!</div>
+    <div class="bp-cd-val ready" id="cdValMobile">5/5</div>
   </div>
   <div class="palette-scroll" id="mobilePalette"></div>
 </div>
@@ -304,10 +305,12 @@
     </div>
   </div>
   <div class="sp-section">
-    <div class="sp-title">Кулдаун</div>
+    <div class="sp-title">Пиксели</div>
     <div class="sp-cooldown-wrap">
+      <div style="display:flex;gap:6px;margin-bottom:8px;" id="ammoDots"></div>
       <div class="sp-cd-bar-outer"><div class="sp-cd-bar-inner" id="cdBarSide" style="width:100%"></div></div>
-      <div class="sp-cd-val ready" id="cdValSide">GO!</div>
+      <div class="sp-cd-val ready" id="cdValSide">5/5</div>
+      <div style="font-size:9px;color:var(--dim);text-align:center;margin-top:4px;">+1 каждые 2 сек</div>
     </div>
   </div>
   <div class="sp-section">
@@ -324,7 +327,8 @@
     <div class="stat-row"><span>Поставлено</span><span id="statPlaced">0</span></div>
     <div class="stat-row"><span>Всего на холсте</span><span id="statTotal">0</span></div>
     <div class="stat-row"><span>Холст</span><span>250×250</span></div>
-    <div class="stat-row"><span>Кулдаун</span><span>2 сек</span></div>
+    <div class="stat-row"><span>Запас</span><span>5 пикс.</span></div>
+    <div class="stat-row"><span>Пополнение</span><span>каждые 2с</span></div>
     <div class="stat-row" style="margin-top:6px;">
       <span>X:<span id="spCoordX" style="color:var(--accent2)">—</span></span>
       <span>Y:<span id="spCoordY" style="color:var(--accent2)">—</span></span>
@@ -353,7 +357,8 @@ const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
 const COLS = 250, ROWS = 250;
-const COOLDOWN_MS = 2000;
+const REFILL_MS = 2000;  // каждые 2 сек +1 пиксель
+const MAX_AMMO  = 5;     // максимум 5 пикселей
 
 const PALETTE = [
   '#ffffff','#e4e4e4','#888888','#444444','#222222','#000000',
@@ -376,8 +381,9 @@ let touchMoved = false;
 let touchStartX = 0, touchStartY = 0;
 let touchPanStartTX = 0, touchPanStartTY = 0;
 let touchPanCenterX = 0, touchPanCenterY = 0;
-let canPlace = true;
-let cooldownStart = null;
+let ammo = MAX_AMMO;        // текущий запас пикселей
+let lastRefillTime = Date.now(); // время последнего пополнения
+let refillAnimating = false;
 
 const canvasArea  = document.getElementById('canvasArea');
 const viewport    = document.getElementById('canvasViewport');
@@ -435,49 +441,102 @@ function centerCanvas() {
   panY = (canvasArea.clientHeight - ROWS*zoom) / 2;
   applyViewport();
 }
+function clampPan() {
+  const aw = canvasArea.clientWidth, ah = canvasArea.clientHeight;
+  const cw = COLS * zoom, ch = ROWS * zoom;
+  // Не даём холсту уходить дальше чем на 80% за край
+  const margin = 80;
+  panX = Math.min(aw - margin, Math.max(margin - cw, panX));
+  panY = Math.min(ah - margin, Math.max(margin - ch, panY));
+}
+
 function setZoom(z, ox, oy) {
   const oldZoom = zoom;
   zoom = Math.max(1, Math.min(16, Math.round(z)));
   if (zoom === oldZoom) return;
   const scale = zoom / oldZoom;
-  const cx = ox ?? canvasArea.clientWidth/2;
-  const cy = oy ?? canvasArea.clientHeight/2;
-  panX = cx - (cx - panX)*scale;
-  panY = cy - (cy - panY)*scale;
-  const cw=COLS*zoom, ch=ROWS*zoom;
-  pixelCanvas.width=cw; pixelCanvas.height=ch;
-  gridCanvas.width=cw;  gridCanvas.height=ch;
+  // Точка зума — центр экрана если не передана
+  const cx = ox ?? canvasArea.clientWidth / 2;
+  const cy = oy ?? canvasArea.clientHeight / 2;
+  panX = cx - (cx - panX) * scale;
+  panY = cy - (cy - panY) * scale;
+  const cw = COLS*zoom, ch = ROWS*zoom;
+  pixelCanvas.width = cw; pixelCanvas.height = ch;
+  gridCanvas.width  = cw; gridCanvas.height  = ch;
+  clampPan();
   ['zoomLabel','spZoomLabel'].forEach(id => document.getElementById(id).textContent = '×'+zoom);
   redraw(); drawGrid(); applyViewport();
 }
 
-// Cooldown UI
-function setCooldownUI(pct, text, ready) {
+// Ammo UI — показывает патроны и прогресс пополнения
+function updateAmmoUI() {
+  const now = Date.now();
+
+  // Пополняем патроны если прошло достаточно времени
+  if (ammo < MAX_AMMO) {
+    const elapsed = now - lastRefillTime;
+    if (elapsed >= REFILL_MS) {
+      const refilled = Math.floor(elapsed / REFILL_MS);
+      ammo = Math.min(MAX_AMMO, ammo + refilled);
+      lastRefillTime = now - (elapsed % REFILL_MS);
+    }
+  }
+
+  // Прогресс до следующего пополнения
+  const pct = ammo >= MAX_AMMO
+    ? 100
+    : ((Date.now() - lastRefillTime) / REFILL_MS) * 100;
+
+  const remaining = ammo >= MAX_AMMO
+    ? 0
+    : Math.max(0, REFILL_MS - (Date.now() - lastRefillTime)) / 1000;
+
+  // Текст: "3/5" или "5/5"
+  const text = ammo + '/' + MAX_AMMO;
+  const ready = ammo >= MAX_AMMO;
+
   cdEls.bars.forEach(b => b.style.width = pct + '%');
   cdEls.vals.forEach((v, i) => {
     v.textContent = text;
-    const readyCls = i === 0 ? 'cooldown-value ready' : i === 1 ? 'bp-cd-val ready' : 'sp-cd-val ready';
-    const normalCls = i === 0 ? 'cooldown-value' : i === 1 ? 'bp-cd-val' : 'sp-cd-val';
+    const readyCls   = i === 0 ? 'cooldown-value ready' : i === 1 ? 'bp-cd-val ready' : 'sp-cd-val ready';
+    const normalCls  = i === 0 ? 'cooldown-value'       : i === 1 ? 'bp-cd-val'       : 'sp-cd-val';
     v.className = ready ? readyCls : normalCls;
   });
-}
-function animateCooldown() {
-  const elapsed = Date.now() - cooldownStart;
-  const progress = Math.min(elapsed / COOLDOWN_MS, 1);
-  const remaining = Math.max(0, COOLDOWN_MS - elapsed);
-  if (progress >= 1) {
-    canPlace = true;
-    setCooldownUI(100, 'GO!', true);
-    return;
+
+  // Рисуем точки-патроны (только в сайдбаре на десктопе)
+  updateAmmoDots();
+
+  if (ammo < MAX_AMMO) {
+    requestAnimationFrame(updateAmmoUI);
+  } else {
+    refillAnimating = false;
   }
-  setCooldownUI(progress * 100, (remaining / 1000).toFixed(1) + 's', false);
-  requestAnimationFrame(animateCooldown);
 }
-function startCooldown() {
-  canPlace = false;
-  cooldownStart = Date.now();
-  setCooldownUI(0, '2.0s', false);
-  animateCooldown();
+
+function startAmmoAnimation() {
+  if (!refillAnimating) {
+    refillAnimating = true;
+    lastRefillTime = Date.now();
+    requestAnimationFrame(updateAmmoUI);
+  }
+}
+
+// Точки-патроны под баром
+function updateAmmoDots() {
+  let dotsEl = document.getElementById('ammoDots');
+  if (!dotsEl) return;
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < MAX_AMMO; i++) {
+    const dot = document.createElement('div');
+    dot.style.cssText = `
+      width:12px;height:12px;border-radius:50%;flex-shrink:0;
+      background:${i < ammo ? '#00ff88' : 'rgba(255,255,255,0.1)'};
+      box-shadow:${i < ammo ? '0 0 6px #00ff88' : 'none'};
+      border:1px solid ${i < ammo ? '#00ff88' : 'rgba(255,255,255,0.2)'};
+      transition:background 0.2s,box-shadow 0.2s;
+    `;
+    dotsEl.appendChild(dot);
+  }
 }
 
 // Loading
@@ -553,11 +612,27 @@ onValue(presenceRef, (snap) => {
 
 async function placePixel(x, y) {
   if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return;
-  if (!canPlace) {
-    const rem = ((COOLDOWN_MS - (Date.now() - cooldownStart)) / 1000).toFixed(1);
-    showFlash('Ещё ' + rem + ' сек...', 'error');
+
+  // Обновим патроны перед проверкой
+  if (ammo < MAX_AMMO) {
+    const elapsed = Date.now() - lastRefillTime;
+    const refilled = Math.floor(elapsed / REFILL_MS);
+    if (refilled > 0) {
+      ammo = Math.min(MAX_AMMO, ammo + refilled);
+      lastRefillTime = Date.now() - (elapsed % REFILL_MS);
+    }
+  }
+
+  if (ammo <= 0) {
+    const rem = ((REFILL_MS - (Date.now() - lastRefillTime)) / 1000).toFixed(1);
+    showFlash('Нет пикселей! Ещё ' + rem + ' сек...', 'error');
     return;
   }
+
+  ammo--;
+  if (ammo < MAX_AMMO) startAmmoAnimation();
+  updateAmmoUI();
+
   setPixelLocal(x, y, selectedColor);
   redraw();
   try {
@@ -568,7 +643,6 @@ async function placePixel(x, y) {
   } catch(e) {
     showFlash('Ошибка сети!', 'error');
   }
-  startCooldown();
 }
 
 // Palettes
@@ -636,7 +710,7 @@ canvasArea.addEventListener('mousemove', e=>{
   } else hoverEl.style.display='none';
   if(e.buttons===1){
     const dx=e.clientX-panStartX, dy=e.clientY-panStartY;
-    if(Math.abs(dx)>4||Math.abs(dy)>4){ isPanning=true; panX=panStartTX+dx; panY=panStartTY+dy; applyViewport(); hoverEl.style.display='none'; }
+    if(Math.abs(dx)>4||Math.abs(dy)>4){ isPanning=true; panX=panStartTX+dx; panY=panStartTY+dy; clampPan(); applyViewport(); hoverEl.style.display='none'; }
   }
 });
 canvasArea.addEventListener('mouseup', e=>{
@@ -661,8 +735,8 @@ canvasArea.addEventListener('touchmove',e=>{
   e.preventDefault();
   Array.from(e.changedTouches).forEach(t=>touches[t.identifier]=t);
   const ids=Object.keys(touches);
-  if(ids.length===1){const t=touches[ids[0]];const dx=t.clientX-touchStartX,dy=t.clientY-touchStartY;if(Math.abs(dx)>4||Math.abs(dy)>4)touchMoved=true;panX=touchPanStartTX+dx;panY=touchPanStartTY+dy;applyViewport();}
-  if(ids.length===2){touchMoved=true;const[a,b]=ids.map(i=>touches[i]);const dist=tDist(a,b);const c=tCenter(a,b);const rect=canvasArea.getBoundingClientRect();const ox=c.x-rect.left,oy=c.y-rect.top;if(lastPinchDist){const nz=Math.max(1,Math.min(16,Math.round(zoom*(dist/lastPinchDist))));if(nz!==zoom){setZoom(nz,ox,oy);lastPinchDist=dist;}}panX=touchPanStartTX+(c.x-touchPanCenterX);panY=touchPanStartTY+(c.y-touchPanCenterY);applyViewport();}
+  if(ids.length===1){const t=touches[ids[0]];const dx=t.clientX-touchStartX,dy=t.clientY-touchStartY;if(Math.abs(dx)>4||Math.abs(dy)>4)touchMoved=true;panX=touchPanStartTX+dx;panY=touchPanStartTY+dy;clampPan();applyViewport();}
+  if(ids.length===2){touchMoved=true;const[a,b]=ids.map(i=>touches[i]);const dist=tDist(a,b);const c=tCenter(a,b);const rect=canvasArea.getBoundingClientRect();const ox=c.x-rect.left,oy=c.y-rect.top;if(lastPinchDist){const nz=Math.max(1,Math.min(16,Math.round(zoom*(dist/lastPinchDist))));if(nz!==zoom){setZoom(nz,ox,oy);lastPinchDist=dist;}}panX=touchPanStartTX+(c.x-touchPanCenterX);panY=touchPanStartTY+(c.y-touchPanCenterY);clampPan();applyViewport();}
 },{passive:false});
 canvasArea.addEventListener('touchend',e=>{
   e.preventDefault();
@@ -681,6 +755,9 @@ document.getElementById('spZoomOut').addEventListener('click',()=>setZoom(zoom-1
 
 // Fullscreen
 const fsBtn=document.getElementById('fsBtn');
+document.getElementById('centerBtn').addEventListener('click', () => {
+  setZoom(2); centerCanvas();
+});
 fsBtn.addEventListener('click',()=>{ if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); });
 document.addEventListener('fullscreenchange',()=>{ fsBtn.textContent=document.fullscreenElement?'✕':'⛶'; setTimeout(centerCanvas,150); });
 
@@ -691,6 +768,9 @@ function showFlash(msg,type){
 }
 
 window.addEventListener('resize',()=>setTimeout(centerCanvas,50));
+
+// Инициализация патронов
+updateAmmoUI();
 </script>
 </body>
 </html>
