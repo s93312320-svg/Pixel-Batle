@@ -220,6 +220,74 @@
   #flashMsg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   #flashMsg.error { border-color: var(--accent); color: var(--accent); }
   #flashMsg.success { border-color: #00ff88; color: #00ff88; }
+  #flashMsg.info    { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ── CHAT ── */
+  #chatBtn { position: relative; }
+  #chatBadge {
+    position: absolute; top: -4px; right: -4px;
+    background: var(--accent); color: #fff;
+    font-size: 8px; min-width: 14px; height: 14px;
+    border-radius: 7px; display: none;
+    align-items: center; justify-content: center;
+    font-family: 'Press Start 2P', monospace; padding: 0 3px;
+    pointer-events: none;
+  }
+  #chatPanel {
+    position: fixed;
+    bottom: 60px; right: 10px;
+    width: min(300px, calc(100vw - 20px));
+    max-height: 360px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    display: none; flex-direction: column;
+    z-index: 500;
+    box-shadow: 0 8px 32px rgba(0,0,0,.7);
+    animation: chatPop .15s ease;
+  }
+  @keyframes chatPop { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  #chatPanel.open { display: flex; }
+  .chat-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .chat-head-title { font-family:'Press Start 2P',monospace; font-size:7px; color:var(--dim); letter-spacing:2px; }
+  #chatMsgs {
+    flex: 1; overflow-y: auto; padding: 8px 10px;
+    display: flex; flex-direction: column; gap: 5px;
+    min-height: 120px;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+  #chatMsgs::-webkit-scrollbar { width: 3px; }
+  #chatMsgs::-webkit-scrollbar-thumb { background: var(--border); }
+  .cmsg { animation: msgIn .12s ease; }
+  @keyframes msgIn { from{opacity:0;transform:translateY(3px)} to{opacity:1;transform:translateY(0)} }
+  .cmsg-meta { font-size: 9px; color: var(--dim); margin-bottom: 2px; }
+  .cmsg-text {
+    font-size: 11px; color: var(--text); word-break: break-word; line-height: 1.4;
+    background: rgba(255,255,255,.04); border-left: 2px solid var(--border);
+    padding: 3px 8px;
+  }
+  .cmsg.mine .cmsg-text { border-left-color: var(--accent2); background: rgba(0,255,255,.05); }
+  .cmsg.mine .cmsg-meta { color: var(--accent2); }
+  .chat-input-row {
+    display: flex; gap: 6px; padding: 7px 8px;
+    border-top: 1px solid var(--border); flex-shrink: 0;
+  }
+  #chatInp {
+    flex: 1; background: rgba(255,255,255,.04); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; padding: 6px 9px; outline: none; min-width: 0;
+  }
+  #chatInp:focus { border-color: var(--accent2); }
+  #chatInp::placeholder { color: var(--dim); }
+  #chatSend {
+    background: rgba(0,255,255,.08); border: 1px solid var(--accent2);
+    color: var(--accent2); font-size: 13px;
+    padding: 6px 11px; cursor: pointer; flex-shrink: 0;
+    transition: background .12s;
+  }
+  #chatSend:hover { background: rgba(0,255,255,.18); }
 
   @media (min-width: 700px) {
     :root { --bottom-h: 0px; }
@@ -228,6 +296,7 @@
     #sidePanel { display: flex; }
     #flashMsg { bottom: 24px; }
     .logo { font-size: 12px; }
+    #chatPanel { bottom: 14px; right: 234px; }
   }
 </style>
 </head>
@@ -252,6 +321,7 @@
       <div class="cooldown-value ready" id="cdVal">5/5</div>
     </div>
     <button class="fs-btn" id="centerBtn" title="По центру" style="font-size:13px;">⌖</button>
+    <button class="fs-btn" id="chatBtn" title="Чат">💬<span id="chatBadge"></span></button>
     <button class="fs-btn" id="fsBtn" title="Полный экран">⛶</button>
   </div>
 </header>
@@ -336,11 +406,22 @@
   </div>
 </div>
 
+<div id="chatPanel">
+  <div class="chat-head">
+    <div class="chat-head-title">💬 АНОНИМНЫЙ ЧАТ</div>
+  </div>
+  <div id="chatMsgs"></div>
+  <div class="chat-input-row">
+    <input id="chatInp" type="text" placeholder="Написать..." maxlength="120" autocomplete="off">
+    <button id="chatSend">➤</button>
+  </div>
+</div>
+
 <div id="flashMsg"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, onDisconnect, push, remove }
+import { getDatabase, ref, set, onValue, onDisconnect, push, remove, query, limitToLast }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -433,40 +514,52 @@ function drawGrid() {
   for(let x=0;x<=COLS;x++){gctx.beginPath();gctx.moveTo(x*zoom,0);gctx.lineTo(x*zoom,ROWS*zoom);gctx.stroke();}
   for(let y=0;y<=ROWS;y++){gctx.beginPath();gctx.moveTo(0,y*zoom);gctx.lineTo(COLS*zoom,y*zoom);gctx.stroke();}
 }
-function applyViewport() {
-  viewport.style.transform = `translate(${Math.round(panX)}px,${Math.round(panY)}px)`;
-}
 function centerCanvas() {
-  panX = (canvasArea.clientWidth  - COLS*zoom) / 2;
-  panY = (canvasArea.clientHeight - ROWS*zoom) / 2;
+  panX = (canvasArea.clientWidth  - COLS * zoom) / 2;
+  panY = (canvasArea.clientHeight - ROWS * zoom) / 2;
   applyViewport();
 }
+
+function applyViewport() {
+  viewport.style.transformOrigin = '0 0';
+  viewport.style.transform = `translate(${Math.round(panX)}px,${Math.round(panY)}px)`;
+}
+
 function clampPan() {
   const aw = canvasArea.clientWidth, ah = canvasArea.clientHeight;
-  const cw = COLS * zoom, ch = ROWS * zoom;
-  // Не даём холсту уходить дальше чем на 80% за край
   const margin = 80;
-  panX = Math.min(aw - margin, Math.max(margin - cw, panX));
-  panY = Math.min(ah - margin, Math.max(margin - ch, panY));
+  panX = Math.min(aw - margin, Math.max(margin - COLS * zoom, panX));
+  panY = Math.min(ah - margin, Math.max(margin - ROWS * zoom, panY));
 }
 
 function setZoom(z, ox, oy) {
   const oldZoom = zoom;
   zoom = Math.max(1, Math.min(16, Math.round(z)));
   if (zoom === oldZoom) return;
+
+  const cx = (ox != null) ? ox : canvasArea.clientWidth  / 2;
+  const cy = (oy != null) ? oy : canvasArea.clientHeight / 2;
   const scale = zoom / oldZoom;
-  // Точка зума — центр экрана если не передана
-  const cx = ox ?? canvasArea.clientWidth / 2;
-  const cy = oy ?? canvasArea.clientHeight / 2;
   panX = cx - (cx - panX) * scale;
   panY = cy - (cy - panY) * scale;
-  const cw = COLS*zoom, ch = ROWS*zoom;
+
+  const cw = COLS * zoom, ch = ROWS * zoom;
   pixelCanvas.width = cw; pixelCanvas.height = ch;
   gridCanvas.width  = cw; gridCanvas.height  = ch;
   clampPan();
-  ['zoomLabel','spZoomLabel'].forEach(id => document.getElementById(id).textContent = '×'+zoom);
+  ['zoomLabel','spZoomLabel'].forEach(id =>
+    document.getElementById(id).textContent = '×' + zoom);
   redraw(); drawGrid(); applyViewport();
 }
+
+// ── ПИНЧ — простой и плавный ──
+let pinchActive    = false;
+let pinchStartDist = 0;
+let pinchStartZoom = 0;
+let pinchStartPanX = 0, pinchStartPanY = 0;
+let pinchCenterX   = 0, pinchCenterY   = 0;
+let lastPinchZoom  = 0; // последний зум при котором пересоздавали canvas
+
 
 // Ammo UI — показывает патроны и прогресс пополнения
 function updateAmmoUI() {
@@ -610,6 +703,8 @@ onValue(presenceRef, (snap) => {
   document.getElementById('onlineDot').classList.toggle('connected', count > 0);
 });
 
+function handlePlace(x, y) { placePixel(x, y); }
+
 async function placePixel(x, y) {
   if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return;
 
@@ -721,31 +816,117 @@ canvasArea.addEventListener('mouseup', e=>{
 canvasArea.addEventListener('mouseleave',()=>{ hoverEl.style.display='none'; isPanning=false; setCoords(-1,-1); });
 canvasArea.addEventListener('wheel',e=>{ e.preventDefault(); const rect=canvasArea.getBoundingClientRect(); setZoom(zoom+(e.deltaY<0?1:-1),e.clientX-rect.left,e.clientY-rect.top); },{passive:false});
 
-// Touch
-function tDist(a,b){return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);}
-function tCenter(a,b){return{x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2};}
-canvasArea.addEventListener('touchstart',e=>{
+// ── Touch handlers ──
+function tDist(a,b){ return Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY); }
+function tCenter(a,b){ return { x:(a.clientX+b.clientX)/2, y:(a.clientY+b.clientY)/2 }; }
+
+canvasArea.addEventListener('touchstart', e => {
   e.preventDefault();
-  Array.from(e.changedTouches).forEach(t=>touches[t.identifier]=t);
-  const ids=Object.keys(touches); touchMoved=false;
-  if(ids.length===1){const t=touches[ids[0]];touchStartX=t.clientX;touchStartY=t.clientY;touchPanStartTX=panX;touchPanStartTY=panY;}
-  if(ids.length===2){const[a,b]=ids.map(i=>touches[i]);lastPinchDist=tDist(a,b);const c=tCenter(a,b);touchPanCenterX=c.x;touchPanCenterY=c.y;touchPanStartTX=panX;touchPanStartTY=panY;}
-},{passive:false});
-canvasArea.addEventListener('touchmove',e=>{
+  Array.from(e.changedTouches).forEach(t => touches[t.identifier] = t);
+  const ids = Object.keys(touches);
+  touchMoved = false;
+
+  if (ids.length === 1) {
+    pinchActive = false;
+    const t = touches[ids[0]];
+    touchStartX = t.clientX; touchStartY = t.clientY;
+    touchPanStartTX = panX;  touchPanStartTY = panY;
+  }
+
+  if (ids.length === 2) {
+    const [a, b] = ids.map(i => touches[i]);
+    const rect = canvasArea.getBoundingClientRect();
+    const c = tCenter(a, b);
+    pinchActive     = true;
+    pinchStartDist  = tDist(a, b);
+    pinchStartZoom  = zoom;
+    pinchStartPanX  = panX;
+    pinchStartPanY  = panY;
+    pinchCenterX    = c.x - rect.left;
+    pinchCenterY    = c.y - rect.top;
+    lastPinchZoom   = zoom;
+  }
+}, { passive: false });
+
+canvasArea.addEventListener('touchmove', e => {
   e.preventDefault();
-  Array.from(e.changedTouches).forEach(t=>touches[t.identifier]=t);
-  const ids=Object.keys(touches);
-  if(ids.length===1){const t=touches[ids[0]];const dx=t.clientX-touchStartX,dy=t.clientY-touchStartY;if(Math.abs(dx)>4||Math.abs(dy)>4)touchMoved=true;panX=touchPanStartTX+dx;panY=touchPanStartTY+dy;clampPan();applyViewport();}
-  if(ids.length===2){touchMoved=true;const[a,b]=ids.map(i=>touches[i]);const dist=tDist(a,b);const c=tCenter(a,b);const rect=canvasArea.getBoundingClientRect();const ox=c.x-rect.left,oy=c.y-rect.top;if(lastPinchDist){const nz=Math.max(1,Math.min(16,Math.round(zoom*(dist/lastPinchDist))));if(nz!==zoom){setZoom(nz,ox,oy);lastPinchDist=dist;}}panX=touchPanStartTX+(c.x-touchPanCenterX);panY=touchPanStartTY+(c.y-touchPanCenterY);clampPan();applyViewport();}
-},{passive:false});
-canvasArea.addEventListener('touchend',e=>{
+  Array.from(e.changedTouches).forEach(t => touches[t.identifier] = t);
+  const ids = Object.keys(touches);
+
+  if (ids.length === 1 && !pinchActive) {
+    const t = touches[ids[0]];
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) touchMoved = true;
+    panX = touchPanStartTX + dx;
+    panY = touchPanStartTY + dy;
+    clampPan();
+    applyViewport();
+  }
+
+  if (ids.length === 2 && pinchActive) {
+    touchMoved = true;
+    const [a, b] = ids.map(i => touches[i]);
+    const dist = tDist(a, b);
+    const rect = canvasArea.getBoundingClientRect();
+    const c = tCenter(a, b);
+    const cx = c.x - rect.left;
+    const cy = c.y - rect.top;
+
+    // Вычисляем новый зум относительно startZoom
+    const ratio    = dist / pinchStartDist;
+    const rawZoom  = pinchStartZoom * ratio;
+    const newZoom  = Math.max(1, Math.min(16, Math.round(rawZoom)));
+
+    // Пересчитываем pan — точка пинча не двигается
+    const scale = newZoom / pinchStartZoom;
+    const newPanX = pinchCenterX - (pinchCenterX - pinchStartPanX) * scale;
+    const newPanY = pinchCenterY - (pinchCenterY - pinchStartPanY) * scale;
+
+    // Обновляем canvas только если зум изменился
+    if (newZoom !== zoom) {
+      zoom = newZoom;
+      panX = newPanX;
+      panY = newPanY;
+      const cw = COLS * zoom, ch = ROWS * zoom;
+      pixelCanvas.width = cw; pixelCanvas.height = ch;
+      gridCanvas.width  = cw; gridCanvas.height  = ch;
+      clampPan();
+      ['zoomLabel','spZoomLabel'].forEach(id =>
+        document.getElementById(id).textContent = '×' + zoom);
+      redraw(); drawGrid();
+    } else {
+      // Зум не изменился — просто двигаем pan (перетаскивание двумя пальцами)
+      panX = newPanX;
+      panY = newPanY;
+      clampPan();
+    }
+    applyViewport();
+  }
+}, { passive: false });
+
+canvasArea.addEventListener('touchend', e => {
   e.preventDefault();
-  Array.from(e.changedTouches).forEach(t=>delete touches[t.identifier]);
-  lastPinchDist=null;
-  const ids=Object.keys(touches);
-  if(ids.length===0&&!touchMoved){const t=e.changedTouches[0];const rect=canvasArea.getBoundingClientRect();const{x,y}=areaToPixel(t.clientX-rect.left,t.clientY-rect.top);placePixel(x,y);}
-  if(ids.length===1){const t=touches[ids[0]];touchStartX=t.clientX;touchStartY=t.clientY;touchPanStartTX=panX;touchPanStartTY=panY;}
-},{passive:false});
+  Array.from(e.changedTouches).forEach(t => delete touches[t.identifier]);
+  const ids = Object.keys(touches);
+
+  if (ids.length === 0) {
+    if (!touchMoved && !pinchActive) {
+      const t = e.changedTouches[0];
+      const rect = canvasArea.getBoundingClientRect();
+      const { x, y } = areaToPixel(t.clientX - rect.left, t.clientY - rect.top);
+      handlePlace(x, y);
+    }
+    pinchActive = false;
+  }
+
+  if (ids.length === 1) {
+    pinchActive = false;
+    const t = touches[ids[0]];
+    touchStartX    = t.clientX; touchStartY    = t.clientY;
+    touchPanStartTX = panX;     touchPanStartTY = panY;
+  }
+}, { passive: false });
 
 // Zoom buttons
 document.getElementById('zoomIn').addEventListener('click',   ()=>setZoom(zoom+1));
@@ -771,6 +952,88 @@ window.addEventListener('resize',()=>setTimeout(centerCanvas,50));
 
 // Инициализация патронов
 updateAmmoUI();
+
+// ═══════════════════════════════════════
+// АНОНИМНЫЙ ЧАТ
+// ═══════════════════════════════════════
+const MY_SID = Math.random().toString(36).slice(2,8);
+let chatOpen = false;
+let unread   = 0;
+let lastSeen = Date.now();
+
+const chatPanel = document.getElementById('chatPanel');
+const chatBadge = document.getElementById('chatBadge');
+const chatMsgs  = document.getElementById('chatMsgs');
+const chatInp   = document.getElementById('chatInp');
+const chatSend  = document.getElementById('chatSend');
+const chatBtn   = document.getElementById('chatBtn');
+
+// Открыть/закрыть
+chatBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  chatOpen = !chatOpen;
+  chatPanel.classList.toggle('open', chatOpen);
+  if (chatOpen) {
+    unread = 0;
+    chatBadge.style.display = 'none';
+    lastSeen = Date.now();
+    requestAnimationFrame(() => chatMsgs.scrollTop = chatMsgs.scrollHeight);
+    setTimeout(() => chatInp.focus(), 60);
+  }
+});
+
+document.addEventListener('click', e => {
+  if (chatOpen && !chatPanel.contains(e.target) && e.target !== chatBtn) {
+    chatOpen = false;
+    chatPanel.classList.remove('open');
+  }
+});
+
+// Отправить
+function sendMsg() {
+  const text = chatInp.value.trim().slice(0, 120);
+  if (!text) return;
+  chatInp.value = '';
+  push(ref(db, 'chat'), { text, s: MY_SID, t: Date.now() });
+}
+chatSend.addEventListener('click', sendMsg);
+chatInp.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); sendMsg(); }
+  if (e.key === 'Escape') { chatOpen = false; chatPanel.classList.remove('open'); }
+});
+
+// Слушаем сообщения
+onValue(query(ref(db,'chat'), limitToLast(80)), snap => {
+  const data = snap.val();
+  chatMsgs.innerHTML = '';
+  if (!data) return;
+
+  Object.values(data)
+    .sort((a,b) => a.t - b.t)
+    .forEach(msg => {
+      const isMe = msg.s === MY_SID;
+      const d = document.createElement('div');
+      d.className = 'cmsg' + (isMe ? ' mine' : '');
+      const t = new Date(msg.t);
+      const time = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0');
+      d.innerHTML = `<div class="cmsg-meta">${isMe?'ты':'аноним'} · ${time}</div>`
+                  + `<div class="cmsg-text">${msg.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+      chatMsgs.appendChild(d);
+
+      if (!isMe && msg.t > lastSeen && !chatOpen) unread++;
+    });
+
+  if (chatOpen) {
+    unread = 0;
+    chatBadge.style.display = 'none';
+    requestAnimationFrame(() => chatMsgs.scrollTop = chatMsgs.scrollHeight);
+  } else if (unread > 0) {
+    chatBadge.textContent = unread > 9 ? '9+' : unread;
+    chatBadge.style.display = 'flex';
+    lastSeen = Date.now();
+    unread = 0;
+  }
+});
 </script>
 </body>
 </html>
